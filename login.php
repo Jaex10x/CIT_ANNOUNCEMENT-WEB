@@ -9,7 +9,7 @@
 <div>
 
     <div class="container d-flex justify-content-center mt-5">
-    <h2 class="font-weight-bold" style="color: #800000;">Admin Login</h2>
+    <h2 class="font-weight-bold" style="color: #800000;">Login</h2>
 </div>
 
 	<form method="post">
@@ -29,8 +29,8 @@ if(isset($_POST['btnLogin'])){
 
     $hashed_pword = password_hash($password, PASSWORD_DEFAULT);	
 
-    //paras email og login sa admin
-    $sql = "SELECT * FROM tbusers WHERE email = '$email' AND role = 'admin'";
+    //paras email og login esa admin
+    $sql = "SELECT * FROM tbuser WHERE email = '$email' AND role = 'admin'";
 
     $result = mysqli_query($connection, $sql);	
 		
