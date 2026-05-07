@@ -26,6 +26,15 @@
         Cebu Institute of Technology - University
       </h5>
     </a>
+    <a  class="btn btn-danger rounded-pill px-3 py-1" style="background-color: #a3262a; border: none; font-size: 0.8rem; text-color: #fff;" href="dashboard.php">
+            Announcement
+        </a>
+        <a  class="btn btn-danger rounded-pill px-3 py-1" style="background-color: #a3262a; border: none; font-size: 0.8rem; text-color: #fff;" href="dashboard.php">
+            Events
+        </a>
+        <a  class="btn btn-danger rounded-pill px-3 py-1" style="background-color: #a3262a; border: none; font-size: 0.8rem; text-color: #fff;" href="dashboard.php">
+            Status
+        </a>
   </nav>
 </div>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

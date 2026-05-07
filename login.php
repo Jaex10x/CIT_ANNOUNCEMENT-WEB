@@ -4,22 +4,13 @@
     require_once 'includes/header.php'; 
 ?>
 
-<link rel="stylesheet" href="styles/header.css">
-
-<div>
-
-    <div class="container d-flex justify-content-center mt-5">
-    <h2 class="font-weight-bold" style="color: #800000;">Login</h2>
-</div>
-
-	<form method="post">
-		<pre>			
-			Email:<input type="text" name="txtemail">	
-			Password:<input type="password" name="txtpassword">				
-			
-			<input type="submit" name="btnLogin" value="Login"> 
-		</pre>
-	</form>
+<div class="container mt-5">
+    <h2 class="text-center" style="color: #800000;">Login</h2>
+    <form method="post" class="text-center">
+        Email: <input type="text" name="txtemail"><br><br>
+        Password: <input type="password" name="txtpassword"><br><br>
+        <input type="submit" name="btnLogin" value="Login" class="btn btn-danger"> 
+    </form>
 </div>
 
 <?php
