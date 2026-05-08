@@ -7,39 +7,150 @@
     require_once 'includes/header.php'; 
 ?>
 
-<div class="container mt-4 text-center">
-    <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
-        <h2 style="color: #800000; margin-bottom: 0;">Announcement Dashboard</h2>
-        <a href="addNewAnnouncement.php" class="btn btn-danger rounded-pill px-3 py-1" style="background-color: #a3262a; border: none; font-size: 0.8rem;">
-            + Create Announcement
-        </a>
-        <a href="logout.php" class="btn btn-danger rounded-pill px-3 py-1" style="background-color: #a3262a; border: none; font-size: 0.8rem;">
-            Logout
-        </a>
+<style>
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+    .status-active {
+        background-color: #28a745;
+        color: white;
+    }
+    .status-unread {
+        background-color: #ffc107;
+        color: #333;
+    }
+    .status-review {
+        background-color: #17a2b8;
+        color: white;
+    }
+    .status-reset {
+        background-color: #6c757d;
+        color: white;
+    }
+    .announcement-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .announcement-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .announcement-date {
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+    .announcement-contact {
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+    .divider {
+        border-top: 1px solid #e0e0e0;
+        margin: 15px 0;
+    }
+    .feed-header {
+        background-color: #ffd700;
+        display: inline-block;
+        padding: 8px 24px;
+        border-radius: 30px;
+        color: #a3262a;
+        font-weight: bold;
+        margin-bottom: 30px;
+    }
+    .cit-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .cit-header h1 {
+        color: #800000;
+        font-weight: bold;
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+    .cit-header p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <!-- CIT UNIVERSITY ADVISORY Header -->
+    <div class="cit-header">
+        <h1>CIT UNIVERSITY ADVISORY</h1>
+        <p>Suspension of Face-to-Face Classes | Thursday, February 26, 2025</p>
     </div>
 
-    <h4 class="p-2 mb-4" style="background-color: #ffd700; border-radius: 25px; color: #a3262a; font-weight: bold; width: 100%;">
-        Announcement Feed
-    </h4>
-
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <?php while($row = $resultset->fetch_assoc()): ?>
-                <div class="card mb-3 shadow-sm border-0 text-start" style="border-radius: 20px;">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold">Title: <?php echo htmlspecialchars($row['title']); ?></h5>
-                        <p class="text-muted mb-2">Date: <?php echo htmlspecialchars($row['date_posted']); ?></p>
-                        <p><?php echo nl2br(htmlspecialchars($row['announcement_text'])); ?></p>
-                        
-                        <div class="mt-3">
-                            <a href="update.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger rounded-pill px-3" style="background-color: #a3262a;">update</a>
-                            <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger rounded-pill px-3" style="background-color: #a3262a;">Delete</a>
-                        </div>
-                    </div>
-                </div>
-            <?php endwhile; ?>
+    <!-- Announcement Feed Header -->
+    <div class="text-center mb-4">
+        <div class="feed-header">
+            Announcement Feed
         </div>
     </div>
+
+    <!-- Action Buttons -->
+    <div class="text-right mb-4">
+        <a href="addNewAnnouncement.php" class="btn btn-danger rounded-pill px-4 py-2" style="background-color: #a3262a; border: none;">
+            + Create Announcement
+        </a>
+    </div>
+
+    <!-- Announcements List -->
+    <?php while($row = $resultset->fetch_assoc()): ?>
+        <div class="announcement-card">
+            <div class="announcement-title">
+                <?php echo htmlspecialchars($row['title']); ?>
+            </div>
+            <div class="announcement-date">
+                Date: <?php echo htmlspecialchars($row['date_posted']); ?>
+            </div>
+            <div class="announcement-contact">
+                <?php echo nl2br(htmlspecialchars($row['announcement_text'])); ?>
+            </div>
+            <div class="divider"></div>
+            <div>
+                <span class="status-badge status-active">ACTIVE</span>
+                <span class="status-badge status-unread">UNREAD</span>
+                <span class="status-badge status-review">REVIEW</span>
+                <span class="status-badge status-reset">RESET</span>
+            </div>
+            <div class="mt-3">
+                <a href="update.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="border-color: #a3262a; color: #a3262a;">
+                    Edit
+                </a>
+                <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger rounded-pill px-3 ml-2" style="border-color: #a3262a; color: #a3262a;" onclick="return confirm('Are you sure you want to delete this announcement?');">
+                    Delete
+                </a>
+                <a href="addNewAnnouncement.php" class="btn btn-sm btn-outline-danger rounded-pill px-3 ml-2" style="border-color: #a3262a; color: #a3262a;">
+                    Add
+                </a>
+            </div>
+        </div>
+    <?php endwhile; ?>
+    
+    <?php if($resultset->num_rows == 0): ?>
+        <div class="text-center py-5">
+            <p class="text-muted">No announcements yet. Click "Create Announcement" to add one.</p>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Footer -->
+<div class="text-center mt-4 py-3" style="border-top: 1px solid #ddd; color: #666;">
+    <small>LVB Copyright 2026</small>
 </div>
 
 <?php require_once 'includes/footer.php'; ?>
