@@ -5,21 +5,13 @@ include 'connect.php';
 if(isset($_POST['btnLogin'])){
     $email = $_POST['txtemail'];
     $password = $_POST['txtpassword'];
-    $userType = $_POST['userType']; 
+    
 
-    $hashed_pword = password_hash($password, PASSWORD_DEFAULT);	
-
-    // Change SQL query based on user type
-    if($userType == 'admin'){
-        $sql = "SELECT * FROM tbuser WHERE email = '$email' AND role = 'admin'";
-    } else {
-        $sql = "SELECT * FROM tbstudents WHERE email = '$email'"; 
-    }
-
+    $sql = "SELECT * FROM tbuser WHERE email = '$email'";
     $result = mysqli_query($connection, $sql);	
-		
+        
     $count = mysqli_num_rows($result);
-    $row = mysqli_fetch_array($result);
+    $row = mysqli_fetch_assoc($result);  
 
     if($count == 0){
         echo "<script language='javascript'>
@@ -27,26 +19,30 @@ if(isset($_POST['btnLogin'])){
                 window.location.href = 'login.php';
               </script>";
         exit();
-    } else if(!password_verify($password, $hashed_pword)){
+    } 
+    
+    
+    if(!password_verify($password, $row['password'])){
         echo "<script language='javascript'>
                 alert('Incorrect password');
                 window.location.href = 'login.php';
               </script>";
         exit();
-    } else {		
-        $_SESSION['username'] = $row[0];
-        $_SESSION['userType'] = $userType;
-        
-        if($userType == 'admin'){
-            header("location: dashboard.php");
-        } else {
-            header("location: student_dashboard.php");
-        }
-        exit();
+    } 
+    
+    $_SESSION['username'] = $row['firstname'] . ' ' . $row['lastname'];  
+    $_SESSION['userType'] = $row['role']; 
+    $_SESSION['user_id'] = $row['id'];
+    
+    
+    if($row['role'] == 'admin'){
+        header("location: dashboard.php");
+    } else {
+        header("location: student_dashboard.php");
     }
+    exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,6 +145,7 @@ if(isset($_POST['btnLogin'])){
         .cit-logo img {
             width: 80px;
             height: auto;
+             filter: drop-shadow(0 4px 16px rgba(128,0,0,0.2));
         }
         .cit-logo h2 {
             font-family: 'EB Garamond', serif;
@@ -261,26 +258,12 @@ if(isset($_POST['btnLogin'])){
                 <img src="images/citlogo.png" alt="CIT Logo">
                 <h2>CEBU INSTITUTE OF TECHNOLOGY</h2>
                 <p>UNIVERSITY</p>
-                <div class="est">OF TECHNOLOGICAL UNIVERSITY</div>
-                <div class="est">1946</div>
             </div>
             
             <h5>User Authentication</h5>
             <hr class="divider">
             
             <form method="post">
-                <div class="user-type">
-                    <label>
-                        <input type="radio" name="userType" value="student" required> Student
-                    </label>
-                    <label>
-                        <input type="radio" name="userType" value="admin" required> Admin
-                    </label>
-                    <label>
-                        <input type="radio" name="userType" value="faculty" required> Faculty
-                    </label>
-                </div>
-                
                 <input type="text" name="txtemail" placeholder="Email" autocomplete="email" required>
                 <input type="password" name="txtpassword" placeholder="Password" autocomplete="current-password" required>
                 
@@ -289,6 +272,11 @@ if(isset($_POST['btnLogin'])){
                     <button type="submit" name="btnLogin" class="btn-login">Login</button>
                 </div>
             </form>
+            <div class="text-center mt-3">
+    <p>Don't have an account? <a href="register.php" style="color:#a3262a;">Register as Student</a></p>
+    <hr>
+    <small class="text-muted">Admin accounts are created by system administrators only.</small>
+</div>
         </div>
     </div>
 

@@ -1,19 +1,24 @@
 <?php
-    include 'connect.php';
+session_start();
+if (!isset($_SESSION['userType']) || $_SESSION['userType'] !== 'admin') {
+    header("Location: login.php");
+    exit();
+}
+include 'connect.php';
 
-    if (isset($_GET['id'])) {
-        $id = $_GET['id'];
+if (isset($_GET['id'])) {
+    $id   = (int) $_GET['id'];
+    $stmt = $connection->prepare("DELETE FROM announcements WHERE id = ?");
+    $stmt->bind_param("i", $id);
 
-        $sql = "DELETE FROM announcements WHERE id = $id";
-
-        if ($connection->query($sql) === TRUE) {
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            echo "Error deleting record: " . $connection->error;
-        }
-    } else {
+    if ($stmt->execute()) {
         header("Location: dashboard.php");
         exit();
+    } else {
+        echo "Error deleting record: " . htmlspecialchars($connection->error);
     }
+} else {
+    header("Location: dashboard.php");
+    exit();
+}
 ?>

@@ -1,6 +1,6 @@
-<?php 
-	$connection = new mysqli('localhost', 'root','','dbannouncement');
-	if (!$connection){
-		die (mysqli_error($connection));
-	}
+<?php
+$connection = new mysqli('localhost', 'root', '', 'dbannouncement');
+if ($connection->connect_error) {
+    die('Connection failed: ' . $connection->connect_error);
+}
 ?>
