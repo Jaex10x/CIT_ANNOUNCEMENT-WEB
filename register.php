@@ -7,26 +7,27 @@ $success = '';
 $error   = '';
 
 if (isset($_POST['btnRegister'])) {
-    $fname    = trim($_POST['txtfirstname']);
-    $lname    = trim($_POST['txtlastname']);
-    $gender   = $_POST['txtgender'];
-    $email    = trim($_POST['txtemail']);
-    $password = $_POST['txtpassword'];
-    $confirm  = $_POST['txtconfirmpassword'];
-    
-    $student_id = trim($_POST['txtstudent_id'] ?? '');  
-    $course     = trim($_POST['txtcourse'] ?? '');      
+    $fname     = trim($_POST['txtfirstname']);
+    $lname     = trim($_POST['txtlastname']);
+    $gender    = $_POST['txtgender'];
+    $student_id = trim($_POST['txtstudent_id']);  
+    $program    = trim($_POST['txtprogram']);
+    $year_level = trim($_POST['txtyear_level']);
+    $password   = $_POST['txtpassword'];
+    $confirm    = $_POST['txtconfirmpassword'];
 
     if ($password !== $confirm) {
         $error = 'Passwords do not match.';
+    } elseif (strlen($password) < 6) {
+        $error = 'Password must be at least 6 characters.';
     } else {
         $check = $connection->prepare("SELECT id FROM tbuser WHERE email = ?");
-        $check->bind_param("s", $email);
+        $check->bind_param("s", $student_id);
         $check->execute();
         $check->store_result();
 
         if ($check->num_rows > 0) {
-            $error = 'Email already exists. Please use another email or login.';
+            $error = 'Student ID already exists. Please use another ID or login.';
         } else {
             $hashed = password_hash($password, PASSWORD_DEFAULT);
             $role   = 'student';  
@@ -35,10 +36,10 @@ if (isset($_POST['btnRegister'])) {
                 "INSERT INTO tbuser (firstname, lastname, gender, email, password, role) 
                  VALUES (?, ?, ?, ?, ?, ?)"
             );
-            $stmt->bind_param("ssssss", $fname, $lname, $gender, $email, $hashed, $role);
+            $stmt->bind_param("ssssss", $fname, $lname, $gender, $student_id, $hashed, $role);
 
             if ($stmt->execute()) {
-                $success = 'Registration successful! You can now log in as a student.';
+                $success = 'Registration successful! Use your Student ID to login.';
                 echo "<script>setTimeout(function(){ window.location.href='login.php'; }, 2000);</script>";
             } else {
                 $error = 'Error: ' . $connection->error;
@@ -83,16 +84,47 @@ if (isset($_POST['btnRegister'])) {
                                 <option value="F">Female</option>
                             </select>
                         </div>
+                        
+                       
                         <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" name="txtemail" class="form-control" required>
-                            <small class="text-muted">Use your valid email address</small>
+                            <label>Student ID Number</label>
+                            <input type="text" name="txtstudent_id" class="form-control" 
+                                   placeholder="e.g., 2024-00001" required>
+                            <small class="text-muted">This will be your username/login ID</small>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>Program / Course</label>
+                            <select name="txtprogram" class="form-control" required>
+                                <option value="">-- Select Program --</option>
+                                <option value="BSIT">BS Information Technology</option>
+                                <option value="BSCS">BS Computer Science</option>
+                                <option value="BSIS">BS Information Systems</option>
+                                <option value="BSCE">BS Civil Engineering</option>
+                                <option value="BSECE">BS Electronics Engineering</option>
+                                <option value="BSME">BS Mechanical Engineering</option>
+                                <option value="BSA">BS Accountancy</option>
+                                <option value="BSBA">BS Business Administration</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Year Level</label>
+                            <select name="txtyear_level" class="form-control" required>
+                                <option value="">-- Select Year Level --</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Password</label>
                             <input type="password" name="txtpassword" class="form-control" required>
                             <small class="text-muted">Minimum 6 characters</small>
                         </div>
+                        
                         <div class="form-group">
                             <label>Confirm Password</label>
                             <input type="password" name="txtconfirmpassword" class="form-control" required>

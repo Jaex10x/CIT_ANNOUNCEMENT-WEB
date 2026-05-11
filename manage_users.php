@@ -11,7 +11,7 @@ $success = '';
 $error   = '';
 $editRow = null;
 
-
+// ── CREATE ──────────────────────────────────────────────────────────────────
 if (isset($_POST['btnCreate'])) {
     $firstname = trim($_POST['txtFirstname']);
     $lastname  = trim($_POST['txtLastname']);
@@ -21,6 +21,16 @@ if (isset($_POST['btnCreate'])) {
     $email     = trim($_POST['txtEmail']);
     $role      = $_POST['txtRole'];
     $password  = $_POST['txtPassword'];
+    
+    // Student fields
+    $student_id = trim($_POST['txtStudent_id'] ?? '');
+    $program    = trim($_POST['txtProgram'] ?? '');
+    $year_level = trim($_POST['txtyear_level'] ?? '');
+    
+    // Admin fields
+    $emp_id     = trim($_POST['txtEmp_id'] ?? '');
+    $position   = trim($_POST['txtPosition'] ?? '');
+    $department = trim($_POST['txtDepartment'] ?? '');
 
     $check = $connection->prepare("SELECT id FROM tbuser WHERE email = ?");
     $check->bind_param("s", $email);
@@ -31,20 +41,25 @@ if (isset($_POST['btnCreate'])) {
         $error = 'Email already exists.';
     } else {
         $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $stmt   = $connection->prepare(
-            "INSERT INTO tbuser (firstname, lastname, birthdate, gender, mobileno, email, password, role)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        $stmt = $connection->prepare(
+            "INSERT INTO tbuser (firstname, lastname, birthdate, gender, mobileno, email, password, role, student_id, program, year_level, emp_id, position, department)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param("ssssssss", $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $hashed, $role);
+        $stmt->bind_param("ssssssssssssss", 
+            $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $hashed, $role,
+            $student_id, $program, $year_level, $emp_id, $position, $department
+        );
+        
         if ($stmt->execute()) {
             $success = 'User created successfully.';
+            echo "<script>setTimeout(function(){ window.location.href='manage_users.php'; }, 1000);</script>";
         } else {
             $error = 'Error: ' . $connection->error;
         }
     }
 }
 
-
+// ── UPDATE ──────────────────────────────────────────────────────────────────
 if (isset($_POST['btnUpdate'])) {
     $id        = (int) $_POST['txtId'];
     $firstname = trim($_POST['txtFirstname']);
@@ -54,27 +69,47 @@ if (isset($_POST['btnUpdate'])) {
     $mobileno  = trim($_POST['txtMobileno']);
     $email     = trim($_POST['txtEmail']);
     $role      = $_POST['txtRole'];
+    
+    // Student fields
+    $student_id = trim($_POST['txtStudent_id'] ?? '');
+    $program    = trim($_POST['txtProgram'] ?? '');
+    $year_level = trim($_POST['txtyear_level'] ?? '');
+    
+    // Admin fields
+    $emp_id     = trim($_POST['txtEmp_id'] ?? '');
+    $position   = trim($_POST['txtPosition'] ?? '');
+    $department = trim($_POST['txtDepartment'] ?? '');
 
     if (!empty($_POST['txtPassword'])) {
         $hashed = password_hash($_POST['txtPassword'], PASSWORD_DEFAULT);
-        $stmt   = $connection->prepare(
-            "UPDATE tbuser SET firstname=?, lastname=?, birthdate=?, gender=?, mobileno=?, email=?, password=?, role=? WHERE id=?"
+        $stmt = $connection->prepare(
+            "UPDATE tbuser SET firstname=?, lastname=?, birthdate=?, gender=?, mobileno=?, email=?, password=?, role=?, 
+             student_id=?, program=?, year_level=?, emp_id=?, position=?, department=? WHERE id=?"
         );
-        $stmt->bind_param("ssssssssi", $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $hashed, $role, $id);
+        $stmt->bind_param("ssssssssssssssi", 
+            $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $hashed, $role,
+            $student_id, $program, $year_level, $emp_id, $position, $department, $id
+        );
     } else {
         $stmt = $connection->prepare(
-            "UPDATE tbuser SET firstname=?, lastname=?, birthdate=?, gender=?, mobileno=?, email=?, role=? WHERE id=?"
+            "UPDATE tbuser SET firstname=?, lastname=?, birthdate=?, gender=?, mobileno=?, email=?, role=?, 
+             student_id=?, program=?, year_level=?, emp_id=?, position=?, department=? WHERE id=?"
         );
-        $stmt->bind_param("sssssssi", $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $role, $id);
+        $stmt->bind_param("sssssssssssssi", 
+            $firstname, $lastname, $birthdate, $gender, $mobileno, $email, $role,
+            $student_id, $program, $year_level, $emp_id, $position, $department, $id
+        );
     }
 
     if ($stmt->execute()) {
         $success = 'User updated successfully.';
+        echo "<script>setTimeout(function(){ window.location.href='manage_users.php'; }, 1000);</script>";
     } else {
         $error = 'Error: ' . $connection->error;
     }
 }
 
+// ── DELETE ──────────────────────────────────────────────────────────────────
 if (isset($_GET['delete'])) {
     $id   = (int) $_GET['delete'];
     $stmt = $connection->prepare("DELETE FROM tbuser WHERE id = ?");
@@ -86,7 +121,7 @@ if (isset($_GET['delete'])) {
     }
 }
 
-
+// ── FETCH FOR EDIT ──────────────────────────────────────────────────────────
 if (isset($_GET['edit'])) {
     $id   = (int) $_GET['edit'];
     $stmt = $connection->prepare("SELECT * FROM tbuser WHERE id = ?");
@@ -95,6 +130,7 @@ if (isset($_GET['edit'])) {
     $editRow = $stmt->get_result()->fetch_assoc();
 }
 
+// ── READ ALL ─────────────────────────────────────────────────────────────────
 $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
 ?>
 
@@ -166,10 +202,81 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
                     </div>
                     <div class="form-group col-md-6">
                         <label class="font-weight-bold">Role</label>
-                        <select name="txtRole" class="form-control" required>
-                            <option value="admin"   <?= ($editRow['role'] ?? '') == 'admin'   ? 'selected' : '' ?>>Admin</option>
+                        <select name="txtRole" class="form-control" id="roleSelect" required onchange="toggleFields()">
                             <option value="student" <?= ($editRow['role'] ?? '') == 'student' ? 'selected' : '' ?>>Student</option>
+                            <option value="admin" <?= ($editRow['role'] ?? '') == 'admin' ? 'selected' : '' ?>>Admin</option>
                         </select>
+                    </div>
+                </div>
+
+                <!-- STUDENT FIELDS -->
+                <div id="studentFields" style="display: <?= ($editRow['role'] ?? 'student') == 'student' ? 'block' : 'none' ?>;">
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">Student Information</div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>Student ID</label>
+                                    <input type="text" name="txtStudent_id" class="form-control"
+                                           value="<?= htmlspecialchars($editRow['student_id'] ?? '') ?>"
+                                           placeholder="e.g., 2024-00001">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Program/Course</label>
+                                    <select name="txtProgram" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        <option value="BSIT" <?= ($editRow['program'] ?? '') == 'BSIT' ? 'selected' : '' ?>>BS Information Technology</option>
+                                        <option value="BSCS" <?= ($editRow['program'] ?? '') == 'BSCS' ? 'selected' : '' ?>>BS Computer Science</option>
+                                        <option value="BSIS" <?= ($editRow['program'] ?? '') == 'BSIS' ? 'selected' : '' ?>>BS Information Systems</option>
+                                        <option value="BSCE" <?= ($editRow['program'] ?? '') == 'BSCE' ? 'selected' : '' ?>>BS Civil Engineering</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Year Level</label>
+                                    <select name="txtyear_level" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        <option value="1" <?= ($editRow['year_level'] ?? '') == '1' ? 'selected' : '' ?>>1st Year</option>
+                                        <option value="2" <?= ($editRow['year_level'] ?? '') == '2' ? 'selected' : '' ?>>2nd Year</option>
+                                        <option value="3" <?= ($editRow['year_level'] ?? '') == '3' ? 'selected' : '' ?>>3rd Year</option>
+                                        <option value="4" <?= ($editRow['year_level'] ?? '') == '4' ? 'selected' : '' ?>>4th Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN FIELDS -->
+                <div id="adminFields" style="display: <?= ($editRow['role'] ?? '') == 'admin' ? 'block' : 'none' ?>;">
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">Admin Information</div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>Employee ID</label>
+                                    <input type="text" name="txtEmp_id" class="form-control"
+                                           value="<?= htmlspecialchars($editRow['emp_id'] ?? '') ?>"
+                                           placeholder="e.g., EMP-001">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Position</label>
+                                    <input type="text" name="txtPosition" class="form-control"
+                                           value="<?= htmlspecialchars($editRow['position'] ?? '') ?>"
+                                           placeholder="e.g., Department Head">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Department</label>
+                                    <select name="txtDepartment" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        <option value="IT" <?= ($editRow['department'] ?? '') == 'IT' ? 'selected' : '' ?>>Information Technology</option>
+                                        <option value="CS" <?= ($editRow['department'] ?? '') == 'CS' ? 'selected' : '' ?>>Computer Science</option>
+                                        <option value="ENG" <?= ($editRow['department'] ?? '') == 'ENG' ? 'selected' : '' ?>>Engineering</option>
+                                        <option value="REG" <?= ($editRow['department'] ?? '') == 'REG' ? 'selected' : '' ?>>Registrar's Office</option>
+                                        <option value="OSA" <?= ($editRow['department'] ?? '') == 'OSA' ? 'selected' : '' ?>>Student Affairs</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -206,33 +313,39 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
             <table class="table table-hover mb-0">
                 <thead style="background-color:#f8f8f8;">
                     <tr>
-                        <th>#</th>
+                        <th>ID</th>
                         <th>Name</th>
-                        <th>Birthdate</th>
-                        <th>Gender</th>
-                        <th>Mobile</th>
-                        <th>Email</th>
+                        <th>Email/Student ID</th>
                         <th>Role</th>
+                        <th>Student ID</th>
+                        <th>Program</th>
+                        <th>Year Level</th>
+                        <th>Emp ID</th>
+                        <th>Position</th>
+                        <th>Department</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ($users->num_rows == 0): ?>
-                        <tr><td colspan="8" class="text-center text-muted py-4">No users found.</td></tr>
+                        <tr><td colspan="11" class="text-center text-muted py-4">No users found.</td></tr>
                     <?php endif; ?>
                     <?php while ($u = $users->fetch_assoc()): ?>
                         <tr>
                             <td><?= $u['id'] ?></td>
                             <td><?= htmlspecialchars($u['firstname'] . ' ' . $u['lastname']) ?></td>
-                            <td><?= htmlspecialchars($u['birthdate']) ?></td>
-                            <td><?= htmlspecialchars($u['gender']) ?></td>
-                            <td><?= htmlspecialchars($u['mobileno']) ?></td>
                             <td><?= htmlspecialchars($u['email']) ?></td>
                             <td>
-                                <span class="badge badge-<?= $u['role'] == 'admin' ? 'danger' : ($u['role'] == 'faculty' ? 'warning' : 'info') ?>">
+                                <span class="badge badge-<?= $u['role'] == 'admin' ? 'danger' : 'info' ?>">
                                     <?= ucfirst($u['role']) ?>
                                 </span>
                             </td>
+                            <td><?= htmlspecialchars($u['student_id'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($u['program'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($u['year_level'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($u['emp_id'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($u['department'] ?? '-') ?></td>
                             <td>
                                 <a href="manage_users.php?edit=<?= $u['id'] ?>"
                                    class="btn btn-sm btn-outline-danger rounded-pill px-3"
@@ -248,6 +361,22 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
         </div>
     </div>
 </div>
+
+<script>
+function toggleFields() {
+    var role = document.getElementById('roleSelect').value;
+    var studentFields = document.getElementById('studentFields');
+    var adminFields = document.getElementById('adminFields');
+    
+    if (role === 'student') {
+        studentFields.style.display = 'block';
+        adminFields.style.display = 'none';
+    } else if (role === 'admin') {
+        studentFields.style.display = 'none';
+        adminFields.style.display = 'block';
+    }
+}
+</script>
 
 <div class="text-center mt-4 py-3" style="border-top:1px solid #ddd; color:#666;">
     <small>LVB Copyright 2026</small>

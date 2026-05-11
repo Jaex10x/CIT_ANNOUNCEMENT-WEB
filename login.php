@@ -3,37 +3,32 @@ session_start();
 include 'connect.php';
 
 if(isset($_POST['btnLogin'])){
-    $email = $_POST['txtemail'];
-    $password = $_POST['txtpassword'];
+    $login_input = $_POST['txtemail'];
+$password = $_POST['txtpassword'];
+
+$sql = "SELECT * FROM tbuser WHERE email = '$login_input' OR student_id = '$login_input'";
+$result = mysqli_query($connection, $sql);	
+    $row = mysqli_fetch_assoc($result);
     
-
-    $sql = "SELECT * FROM tbuser WHERE email = '$email'";
-    $result = mysqli_query($connection, $sql);	
-        
-    $count = mysqli_num_rows($result);
-    $row = mysqli_fetch_assoc($result);  
-
-    if($count == 0){
-        echo "<script language='javascript'>
-                alert('Username not existing.');
-                window.location.href = 'login.php';
-              </script>";
+    if(!$row){
+        echo "<script>alert('User not found.'); window.location.href='login.php';</script>";
         exit();
-    } 
-    
+    }
     
     if(!password_verify($password, $row['password'])){
-        echo "<script language='javascript'>
-                alert('Incorrect password');
-                window.location.href = 'login.php';
-              </script>";
+        echo "<script>alert('Incorrect password'); window.location.href='login.php';</script>";
         exit();
-    } 
+    }
     
-    $_SESSION['username'] = $row['firstname'] . ' ' . $row['lastname'];  
-    $_SESSION['userType'] = $row['role']; 
+    $_SESSION['username'] = $row['firstname'] . ' ' . $row['lastname'];
+    $_SESSION['userType'] = $row['role'];
     $_SESSION['user_id'] = $row['id'];
     
+    if($row['role'] == 'admin'){
+        $_SESSION['emp_id'] = $row['emp_id'];
+        $_SESSION['position'] = $row['position'];
+        $_SESSION['department'] = $row['department'];
+    }
     
     if($row['role'] == 'admin'){
         header("location: dashboard.php");
