@@ -11,7 +11,7 @@ $success = '';
 $error   = '';
 $editRow = null;
 
-// ── CREATE ──────────────────────────────────────────────────────────────────
+
 if (isset($_POST['btnCreate'])) {
     $firstname = trim($_POST['txtFirstname']);
     $lastname  = trim($_POST['txtLastname']);
@@ -22,12 +22,12 @@ if (isset($_POST['btnCreate'])) {
     $role      = $_POST['txtRole'];
     $password  = $_POST['txtPassword'];
     
-    // Student fields
+    
     $student_id = trim($_POST['txtStudent_id'] ?? '');
     $program    = trim($_POST['txtProgram'] ?? '');
     $year_level = trim($_POST['txtyear_level'] ?? '');
     
-    // Admin fields
+    
     $emp_id     = trim($_POST['txtEmp_id'] ?? '');
     $position   = trim($_POST['txtPosition'] ?? '');
     $department = trim($_POST['txtDepartment'] ?? '');
@@ -59,7 +59,7 @@ if (isset($_POST['btnCreate'])) {
     }
 }
 
-// ── UPDATE ──────────────────────────────────────────────────────────────────
+
 if (isset($_POST['btnUpdate'])) {
     $id        = (int) $_POST['txtId'];
     $firstname = trim($_POST['txtFirstname']);
@@ -70,12 +70,11 @@ if (isset($_POST['btnUpdate'])) {
     $email     = trim($_POST['txtEmail']);
     $role      = $_POST['txtRole'];
     
-    // Student fields
+    
     $student_id = trim($_POST['txtStudent_id'] ?? '');
     $program    = trim($_POST['txtProgram'] ?? '');
     $year_level = trim($_POST['txtyear_level'] ?? '');
     
-    // Admin fields
     $emp_id     = trim($_POST['txtEmp_id'] ?? '');
     $position   = trim($_POST['txtPosition'] ?? '');
     $department = trim($_POST['txtDepartment'] ?? '');
@@ -109,7 +108,7 @@ if (isset($_POST['btnUpdate'])) {
     }
 }
 
-// ── DELETE ──────────────────────────────────────────────────────────────────
+
 if (isset($_GET['delete'])) {
     $id   = (int) $_GET['delete'];
     $stmt = $connection->prepare("DELETE FROM tbuser WHERE id = ?");
@@ -121,7 +120,7 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// ── FETCH FOR EDIT ──────────────────────────────────────────────────────────
+
 if (isset($_GET['edit'])) {
     $id   = (int) $_GET['edit'];
     $stmt = $connection->prepare("SELECT * FROM tbuser WHERE id = ?");
@@ -130,7 +129,7 @@ if (isset($_GET['edit'])) {
     $editRow = $stmt->get_result()->fetch_assoc();
 }
 
-// ── READ ALL ─────────────────────────────────────────────────────────────────
+
 $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
 ?>
 
@@ -148,7 +147,6 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- FORM -->
     <div class="card shadow border-0 mb-5" style="border-radius:16px;">
         <div class="card-header text-white"
              style="background-color:#a3262a; border-radius:16px 16px 0 0;">
@@ -209,7 +207,7 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
                     </div>
                 </div>
 
-                <!-- STUDENT FIELDS -->
+            
                 <div id="studentFields" style="display: <?= ($editRow['role'] ?? 'student') == 'student' ? 'block' : 'none' ?>;">
                     <div class="card bg-light mb-3">
                         <div class="card-header">Student Information</div>
@@ -246,7 +244,6 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
                     </div>
                 </div>
 
-                <!-- ADMIN FIELDS -->
                 <div id="adminFields" style="display: <?= ($editRow['role'] ?? '') == 'admin' ? 'block' : 'none' ?>;">
                     <div class="card bg-light mb-3">
                         <div class="card-header">Admin Information</div>
@@ -303,7 +300,6 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
         </div>
     </div>
 
-    <!-- TABLE -->
     <div class="card shadow border-0" style="border-radius:16px;">
         <div class="card-header text-white"
              style="background-color:#a3262a; border-radius:16px 16px 0 0;">
@@ -378,8 +374,5 @@ function toggleFields() {
 }
 </script>
 
-<div class="text-center mt-4 py-3" style="border-top:1px solid #ddd; color:#666;">
-    <small>LVB Copyright 2026</small>
-</div>
 
 <?php require_once 'includes/footer.php'; ?>
