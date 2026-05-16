@@ -6,8 +6,22 @@ if (!isset($_SESSION['userType']) || $_SESSION['userType'] !== 'admin') {
 }
 include 'connect.php';
 
-$query     = "SELECT * FROM announcements ORDER BY id DESC";
-$resultset = $connection->query($query);
+// Pagination settings
+$limit        = 3; // announcements per page
+$page         = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$page         = max(1, $page);
+$offset       = ($page - 1) * $limit;
+
+// Total count for page calculation
+$countResult  = $connection->query("SELECT COUNT(*) AS total FROM announcements");
+$totalRows    = $countResult->fetch_assoc()['total'];
+$totalPages   = ceil($totalRows / $limit);
+$page         = min($page, max(1, $totalPages)); // clamp after we know total
+
+$stmt = $connection->prepare("SELECT * FROM announcements ORDER BY id DESC LIMIT ? OFFSET ?");
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$resultset = $stmt->get_result();
 
 require_once 'includes/header.php';
 ?>
@@ -50,6 +64,55 @@ require_once 'includes/header.php';
     .cit-header            { text-align: center; margin-bottom: 30px; }
     .cit-header h1         { color: #800000; font-weight: bold; font-size: 1.8rem; margin-bottom: 5px; }
     .cit-header p          { color: #666; font-size: 0.9rem; }
+
+    /* Pagination */
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin: 30px 0 10px;
+        flex-wrap: wrap;
+    }
+    .page-info {
+        text-align: center;
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 30px;
+    }
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #a3262a;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .page-btn:hover {
+        background-color: #a3262a;
+        color: white;
+        border-color: #a3262a;
+        text-decoration: none;
+    }
+    .page-btn.active {
+        background-color: #a3262a;
+        color: white;
+        border-color: #a3262a;
+        pointer-events: none;
+    }
+    .page-btn.disabled {
+        color: #ccc;
+        pointer-events: none;
+        border-color: #eee;
+    }
 </style>
 
 <div class="container mt-4">
@@ -72,7 +135,7 @@ require_once 'includes/header.php';
         </div>
     </div>
 
-    <?php if ($resultset->num_rows == 0): ?>
+    <?php if ($totalRows == 0): ?>
         <div class="text-center py-5">
             <p class="text-muted">No announcements yet. Click "Create Announcement" to add one.</p>
         </div>
@@ -105,7 +168,55 @@ require_once 'includes/header.php';
             </div>
         </div>
     <?php endwhile; ?>
-</div>
 
+    <?php if ($totalPages > 1): ?>
+        <div class="pagination-wrap">
+            <!-- Previous -->
+            <a href="?page=<?= $page - 1 ?>"
+               class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>">
+                &laquo; Prev
+            </a>
+
+            <?php
+            // Show up to 5 page buttons with ellipsis
+            $range = 2;
+            $start = max(1, $page - $range);
+            $end   = min($totalPages, $page + $range);
+
+            if ($start > 1): ?>
+                <a href="?page=1" class="page-btn">1</a>
+                <?php if ($start > 2): ?>
+                    <span class="page-btn disabled">&hellip;</span>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php for ($i = $start; $i <= $end; $i++): ?>
+                <a href="?page=<?= $i ?>"
+                   class="page-btn <?= $i === $page ? 'active' : '' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+
+            <?php if ($end < $totalPages): ?>
+                <?php if ($end < $totalPages - 1): ?>
+                    <span class="page-btn disabled">&hellip;</span>
+                <?php endif; ?>
+                <a href="?page=<?= $totalPages ?>" class="page-btn"><?= $totalPages ?></a>
+            <?php endif; ?>
+
+            <!-- Next -->
+            <a href="?page=<?= $page + 1 ?>"
+               class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                Next &raquo;
+            </a>
+        </div>
+
+        <div class="page-info">
+            Showing page <?= $page ?> of <?= $totalPages ?>
+            &nbsp;&bull;&nbsp;
+            <?= $totalRows ?> total announcement<?= $totalRows !== 1 ? 's' : '' ?>
+        </div>
+    <?php endif; ?>
+</div>
 
 <?php require_once 'includes/footer.php'; ?>

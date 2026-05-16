@@ -5,12 +5,25 @@ if (!isset($_SESSION['userType']) || $_SESSION['userType'] !== 'student') {
     exit();
 }
 
-
 include 'connect.php';
 require_once 'includes/header.php';
 
-$query = "SELECT * FROM announcements ORDER BY id DESC";
-$resultset = $connection->query($query);
+
+$limit      = 3; 
+$page       = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$page       = max(1, $page);
+$offset     = ($page - 1) * $limit;
+
+// Total count
+$countResult = $connection->query("SELECT COUNT(*) AS total FROM announcements");
+$totalRows   = $countResult->fetch_assoc()['total'];
+$totalPages  = ceil($totalRows / $limit);
+$page        = min($page, max(1, $totalPages));
+
+$stmt = $connection->prepare("SELECT * FROM announcements ORDER BY id DESC LIMIT ? OFFSET ?");
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$resultset = $stmt->get_result();
 ?>
 
 <style>
@@ -119,11 +132,6 @@ $resultset = $connection->query($query);
         background: #f9f9f9;
         border-radius: 15px;
     }
-    .empty-state i {
-        font-size: 48px;
-        color: #ccc;
-        margin-bottom: 15px;
-    }
     .empty-state p {
         color: #999;
         font-size: 1rem;
@@ -136,6 +144,55 @@ $resultset = $connection->query($query);
         color: #666;
         font-size: 0.8rem;
     }
+
+    /* Pagination */
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin: 30px 0 10px;
+        flex-wrap: wrap;
+    }
+    .page-info {
+        text-align: center;
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 30px;
+    }
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #a3262a;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .page-btn:hover {
+        background-color: #a3262a;
+        color: white;
+        border-color: #a3262a;
+        text-decoration: none;
+    }
+    .page-btn.active {
+        background-color: #a3262a;
+        color: white;
+        border-color: #a3262a;
+        pointer-events: none;
+    }
+    .page-btn.disabled {
+        color: #ccc;
+        pointer-events: none;
+        border-color: #eee;
+    }
 </style>
 
 <div class="container mt-4">
@@ -146,10 +203,9 @@ $resultset = $connection->query($query);
 
     <div class="welcome-banner d-flex justify-content-between align-items-center">
         <div>
-            <h3>Welcome, <?= htmlspecialchars($_SESSION['email'] ?? 'Student') ?>! 📢</h3>
+            <h3>Welcome, <?= htmlspecialchars($_SESSION['username'] ?? 'Student') ?>! 📢</h3>
             <p>Stay updated with the latest university announcements</p>
         </div>
-        <a href="logout.php" class="logout-btn">Logout</a>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -157,10 +213,9 @@ $resultset = $connection->query($query);
         <small class="text-muted">Read-only access</small>
     </div>
 
-    <?php if ($resultset->num_rows == 0): ?>
+    <?php if ($totalRows == 0): ?>
         <div class="empty-state">
-            <i>📭</i>
-            <p>No announcements available at the moment.</p>
+            <p>📭 No announcements available at the moment.</p>
             <small class="text-muted">Check back later for updates from the administration.</small>
         </div>
     <?php endif; ?>
@@ -181,6 +236,54 @@ $resultset = $connection->query($query);
             </div>
         </div>
     <?php endwhile; ?>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="pagination-wrap">
+            <!-- Previous -->
+            <a href="?page=<?= $page - 1 ?>"
+               class="page-btn <?= $page <= 1 ? 'disabled' : '' ?>">
+                &laquo; Prev
+            </a>
+
+            <?php
+            $range = 2;
+            $start = max(1, $page - $range);
+            $end   = min($totalPages, $page + $range);
+
+            if ($start > 1): ?>
+                <a href="?page=1" class="page-btn">1</a>
+                <?php if ($start > 2): ?>
+                    <span class="page-btn disabled">&hellip;</span>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php for ($i = $start; $i <= $end; $i++): ?>
+                <a href="?page=<?= $i ?>"
+                   class="page-btn <?= $i === $page ? 'active' : '' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+
+            <?php if ($end < $totalPages): ?>
+                <?php if ($end < $totalPages - 1): ?>
+                    <span class="page-btn disabled">&hellip;</span>
+                <?php endif; ?>
+                <a href="?page=<?= $totalPages ?>" class="page-btn"><?= $totalPages ?></a>
+            <?php endif; ?>
+
+            <!-- Next -->
+            <a href="?page=<?= $page + 1 ?>"
+               class="page-btn <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                Next &raquo;
+            </a>
+        </div>
+
+        <div class="page-info">
+            Showing page <?= $page ?> of <?= $totalPages ?>
+            &nbsp;&bull;&nbsp;
+            <?= $totalRows ?> total announcement<?= $totalRows !== 1 ? 's' : '' ?>
+        </div>
+    <?php endif; ?>
 </div>
 
 <footer>

@@ -4,19 +4,21 @@ include 'connect.php';
 
 if(isset($_POST['btnLogin'])){
     $login_input = $_POST['txtemail'];
-$password = $_POST['txtpassword'];
+    $password = $_POST['txtpassword'];
 
-$sql = "SELECT * FROM tbuser WHERE email = '$login_input' OR student_id = '$login_input'";
-$result = mysqli_query($connection, $sql);	
+    $sql = "SELECT * FROM tbuser WHERE email = '$login_input' OR student_id = '$login_input'";
+    $result = mysqli_query($connection, $sql);  
     $row = mysqli_fetch_assoc($result);
     
     if(!$row){
-        echo "<script>alert('User not found.'); window.location.href='login.php';</script>";
+        $_SESSION['error'] = 'User not found.';
+        header('Location: login.php');
         exit();
     }
     
     if(!password_verify($password, $row['password'])){
-        echo "<script>alert('Incorrect password'); window.location.href='login.php';</script>";
+        $_SESSION['error'] = 'Incorrect password';
+        header('Location: login.php');
         exit();
     }
     
@@ -257,6 +259,16 @@ $result = mysqli_query($connection, $sql);
             
             <h5>User Authentication</h5>
             <hr class="divider">
+            
+            <!-- Alert Display Container -->
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert alert-danger py-2 small" role="alert">
+                    <?php 
+                        echo $_SESSION['error']; 
+                        unset($_SESSION['error']);
+                    ?>
+                </div>
+            <?php endif; ?>
             
             <form method="post">
                 <input type="text" name="txtemail" placeholder="Email" autocomplete="email" required>
