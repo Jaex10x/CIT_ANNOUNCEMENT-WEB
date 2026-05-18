@@ -18,9 +18,10 @@ if (isset($_POST['btnSave'])) {
     $stmt->bind_param("sss", $title, $date, $text);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Announcement Published Successfully!'); window.location.href='dashboard.php';</script>";
+       header("Location: dashboard.php?success=1");
+        exit();
     } else {
-        echo "<div class='container mt-3'><div class='alert alert-danger'>Error: " . htmlspecialchars($connection->error) . "</div></div>";
+        echo "Failed to publish announcement.";
     }
 }
 ?>

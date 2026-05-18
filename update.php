@@ -35,9 +35,10 @@ if (isset($_POST['btnUpdate'])) {
     $stmt->bind_param("sssi", $title, $date, $text, $id);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Updated Successfully!'); window.location='dashboard.php';</script>";
+       header("Location: dashboard.php?message=updated");
+        exit();
     } else {
-        echo "<script>alert('Error updating record.');</script>";
+        echo "Error updating record.";
     }
 }
 ?>

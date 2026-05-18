@@ -4,19 +4,28 @@ if (!isset($_SESSION['userType']) || $_SESSION['userType'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
+if (isset($_GET['message']) && $_GET['message'] == 'updated') {
+    echo "Updated Successfully!";
+}
+
+if (isset($_GET['success'])) {
+    echo "<p>Announcement Published Successfully!</p>";
+}
+
+
 include 'connect.php';
 
-// Pagination settings
-$limit        = 3; // announcements per page
+
+$limit        = 3; 
 $page         = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $page         = max(1, $page);
 $offset       = ($page - 1) * $limit;
 
-// Total count for page calculation
+
 $countResult  = $connection->query("SELECT COUNT(*) AS total FROM announcements");
 $totalRows    = $countResult->fetch_assoc()['total'];
 $totalPages   = ceil($totalRows / $limit);
-$page         = min($page, max(1, $totalPages)); // clamp after we know total
+$page         = min($page, max(1, $totalPages)); 
 
 $stmt = $connection->prepare("SELECT * FROM announcements ORDER BY id DESC LIMIT ? OFFSET ?");
 $stmt->bind_param("ii", $limit, $offset);

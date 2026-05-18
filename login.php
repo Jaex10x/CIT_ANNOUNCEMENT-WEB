@@ -260,7 +260,6 @@ if(isset($_POST['btnLogin'])){
             <h5>User Authentication</h5>
             <hr class="divider">
             
-            <!-- Alert Display Container -->
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger py-2 small" role="alert">
                     <?php 
@@ -280,7 +279,7 @@ if(isset($_POST['btnLogin'])){
                 </div>
             </form>
             <div class="text-center mt-3">
-    <p>Don't have an account? <a href="register.php" style="color:#a3262a;">Register as Student</a></p>
+    <p>Don't have an account? <a href="register.php" style="color:#a3262a;">Register</a></p>
     <hr>
     <small class="text-muted">Admin accounts are created by system administrators only.</small>
 </div>

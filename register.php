@@ -10,6 +10,7 @@ if (isset($_POST['btnRegister'])) {
     $fname     = trim($_POST['txtfirstname']);
     $lname     = trim($_POST['txtlastname']);
     $gender    = $_POST['txtgender'];
+    $email     = trim($_POST['txtemail']);
     $student_id = trim($_POST['txtstudent_id']);  
     $program    = trim($_POST['txtprogram']);
     $year_level = trim($_POST['txtyear_level']);
@@ -21,7 +22,7 @@ if (isset($_POST['btnRegister'])) {
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters.';
     } else {
-        $check = $connection->prepare("SELECT id FROM tbuser WHERE email = ?");
+        $check = $connection->prepare("SELECT id FROM tbuser WHERE student_id = ?");
         $check->bind_param("s", $student_id);
         $check->execute();
         $check->store_result();
@@ -33,10 +34,10 @@ if (isset($_POST['btnRegister'])) {
             $role   = 'student';  
 
             $stmt = $connection->prepare(
-                "INSERT INTO tbuser (firstname, lastname, gender, email, password, role) 
-                 VALUES (?, ?, ?, ?, ?, ?)"
+                "INSERT INTO tbuser (firstname, lastname, gender, student_id, email, password, role, program, year_level) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
-            $stmt->bind_param("ssssss", $fname, $lname, $gender, $student_id, $hashed, $role);
+            $stmt->bind_param("sssssssss", $fname, $lname, $gender, $student_id, $email, $hashed, $role, $program, $year_level);
 
             if ($stmt->execute()) {
                 $success = 'Registration successful! Use your Student ID to login.';
@@ -84,10 +85,17 @@ if (isset($_POST['btnRegister'])) {
                                 <option value="F">Female</option>
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="txtemail" class="form-control" 
+                                   placeholder="e.g., john@cit.edt" required>
+                            <small class="text-muted">This will be your email</small>
+                        </div>
                         
                        
                         <div class="form-group">
-                            <label>Student ID Number</label>
+                            <label>ID Number</label>
                             <input type="text" name="txtstudent_id" class="form-control" 
                                    placeholder="e.g., 2024-00001" required>
                             <small class="text-muted">This will be your username/login ID</small>

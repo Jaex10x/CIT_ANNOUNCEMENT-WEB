@@ -311,9 +311,9 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Email/Student ID</th>
-                        <th>Role</th>
+                        <th>Email</th>
                         <th>Student ID</th>
+                        <th>Role</th>
                         <th>Program</th>
                         <th>Year Level</th>
                         <th>Emp ID</th>
@@ -327,31 +327,31 @@ $users = $connection->query("SELECT * FROM tbuser ORDER BY id DESC");
                         <tr><td colspan="11" class="text-center text-muted py-4">No users found.</td></tr>
                     <?php endif; ?>
                     <?php while ($u = $users->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= $u['id'] ?></td>
-                            <td><?= htmlspecialchars($u['firstname'] . ' ' . $u['lastname']) ?></td>
-                            <td><?= htmlspecialchars($u['email']) ?></td>
-                            <td>
-                                <span class="badge badge-<?= $u['role'] == 'admin' ? 'danger' : 'info' ?>">
-                                    <?= ucfirst($u['role']) ?>
-                                </span>
-                            </td>
-                            <td><?= htmlspecialchars($u['student_id'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($u['program'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($u['year_level'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($u['emp_id'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($u['department'] ?? '-') ?></td>
-                            <td>
-                                <a href="manage_users.php?edit=<?= $u['id'] ?>"
-                                   class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                   style="border-color:#a3262a; color:#a3262a;">Edit</a>
-                                <a href="manage_users.php?delete=<?= $u['id'] ?>"
-                                   class="btn btn-sm btn-outline-secondary rounded-pill px-3 ml-1"
-                                   onclick="return confirm('Delete this user?');">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
+    <tr>
+        <td><?= $u['id'] ?></td>
+        <td><?= htmlspecialchars($u['firstname'] . ' ' . $u['lastname']) ?></td>
+        <td><?= htmlspecialchars($u['email'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($u['student_id'] ?? '-') ?></td>  
+        <td>
+            <span class="badge badge-<?= $u['role'] == 'admin' ? 'danger' : 'info' ?>">
+                <?= ucfirst($u['role']) ?>
+            </span>
+        </td>
+        <td><?= htmlspecialchars($u['program'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($u['year_level'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($u['emp_id'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($u['department'] ?? '-') ?></td>
+        <td>
+            <a href="manage_users.php?edit=<?= $u['id'] ?>"
+               class="btn btn-sm btn-outline-danger rounded-pill px-3"
+               style="border-color:#a3262a; color:#a3262a;">Edit</a>
+            <a href="manage_users.php?delete=<?= $u['id'] ?>"
+               class="btn btn-sm btn-outline-secondary rounded-pill px-3 ml-1"
+               onclick="return confirm('Delete this user?');">Delete</a>
+        </td>
+    </tr>
+<?php endwhile; ?>
                 </tbody>
             </table>
         </div>
